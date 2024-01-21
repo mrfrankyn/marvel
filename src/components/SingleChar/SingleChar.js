@@ -60,7 +60,6 @@ const SingleChar = (props) => {
 
 const View = ({char}) => {
     const {name, description, thumbnail} = char;
-    console.log(name, description, thumbnail);
     return (
         <>  
             <Helmet>
