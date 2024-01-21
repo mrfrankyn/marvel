@@ -1,7 +1,7 @@
 import { useHttp } from "../hooks/http.hook";
 
 const useMarvelService = () => {
-    const {loading, request, error, clearError} = useHttp();
+    const {request, clearError, process, setProcess} = useHttp();
 
     const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
     const _apiKey = 'apikey=b5ec556c0d08a078245067f3ad7a45df';
@@ -74,19 +74,24 @@ const useMarvelService = () => {
     // }
     
     const _transformComics = (comic) => {
+        console.log(comic);
         if (comic.images && comic.images[0] && comic.images[0].path) {
             return {
                 id: comic.id,
                 title: comic.title ? comic.title : 'NOT AVAILABLE',
                 urlImage: comic.images[0].path + '.' + comic.images[0].extension,
-                price: comic.prices[0].price
+                price: comic.prices[0].price,
+                language: comic.textObjects.language,
+                page: comic.pageCount
             }
         } else {
             return {
                 id: comic.id,
                 title: comic.title ? comic.title : 'NOT AVAILABLE',
                 urlImage: 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg',
-                price: comic.prices[0].price
+                price: comic.prices[0].price,
+                language: comic.textObjects.language,
+                page: comic.pageCount
             }
         }
        
@@ -101,8 +106,7 @@ const useMarvelService = () => {
                 thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
                 homepage: char.urls[0].url,
                 wiki: char.urls[1].url,
-                comics: char.comics.items,
-                failure: false
+                comics: char.comics.items
             }
         } else {
             return {}
@@ -122,7 +126,15 @@ const useMarvelService = () => {
         
     // }
 
-    return {loading, error, clearError, getAllCharacters, getCharacter, getComicsList, getComic, getCharacterByName}
+    return {
+            clearError, 
+            process, 
+            getAllCharacters, 
+            getCharacter, 
+            getComicsList, 
+            getComic, 
+            getCharacterByName,
+            setProcess}
     
 } 
 

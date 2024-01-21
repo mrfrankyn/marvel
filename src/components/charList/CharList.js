@@ -1,12 +1,33 @@
 // import { Component } from 'react/cjs/react.production.min';
-/*с использованием class*/
+
 import { useState, useRef, useEffect} from 'react';
 
 import useMarvelService from '../../services/MarvelService';
-import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/Spinner';
+import ErrorMessage from '../errorMessage/ErrorMessage';
+
 import './charList.scss';
 
+const setContent = (process, Component, newLoading) => {
+    switch (process) {
+        case 'waiting': 
+            return <Spinner/>;
+            break;
+        case 'loading':
+            return newLoading ? <Component/> : <Spinner/>;
+            break;
+        case 'confirmed':
+            return <Component/>;
+            break;
+        case 'error':
+            return <ErrorMessage/>;
+            break;
+        default:
+            throw new Error('Unexpected process state');
+    }
+}
+
+/*с использованием class*/
 // class CharList extends Component {
 
 //     state = {
@@ -125,7 +146,7 @@ const CharList = (props) => {
     const [newLoading, setNewLoading] = useState(false);
     const [charEnded, setCharEnded] = useState(false);
     
-    const {loading, error, getAllCharacters} = useMarvelService();
+    const {loading, error, getAllCharacters, process, setProcess} = useMarvelService();
 
     useEffect(() => {
         onLoadMore(offset, true);
@@ -137,6 +158,7 @@ const CharList = (props) => {
         // setNewLoading(true);
         getAllCharacters(offset)
             .then(onCharListLoaded)
+            .then(() => setProcess('confirmed'));
     }
 
     // const onNewCharListLoading = () => {
@@ -212,21 +234,12 @@ const CharList = (props) => {
             </ul>
         )
     }
-    
-    const items = renderItems(charList);
 
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading && !newLoading ? <Spinner/> : null;
     // const content = !(loading || error) ? items : null;
 
     return (
         <div className="char__list">
-            <ul className="char__grid">
-                {errorMessage}
-                {spinner}
-                {/* {content} */}
-                {items}
-            </ul>
+            {setContent(process, () => renderItems(charList), newLoading)}
             <button 
                 onClick={() => onLoadMore(offset)} 
                 className="button button__main button__long" 

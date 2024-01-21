@@ -1,13 +1,10 @@
 // import { Component } from 'react/cjs/react.production.min';
-/* С использованием class*/
 
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import setContent from '../../utils/setContent';
 
 import useMarvelService from '../../services/MarvelService';
-import ErrorMessage from '../errorMessage/ErrorMessage';
-import Spinner from '../spinner/Spinner';
-import Skeleton from '../skeleton/Skeleton';
 
 import './charInfo.scss';
 
@@ -17,7 +14,7 @@ const CharInfo = (props) => {
     // const [loading, setLoading] = useState(false);
     // const [error, setError] = useState(false);
 
-    const {loading, error, getCharacter, clearError} = useMarvelService();
+    const {getCharacter, clearError, process, setProcess} = useMarvelService();
     
     // const marvelService = new MarvelService();
     
@@ -34,7 +31,10 @@ const CharInfo = (props) => {
         clearError();
         // onCharLoading();
 
-        getCharacter(charId).then(onCharLoaded);
+        getCharacter(charId)
+            .then(onCharLoaded)
+            .then(() => setProcess('confirmed'))
+            // указывать state в http.hook не нужно так как процесс асин
     }
 
     const onCharLoaded = (char) => {
@@ -62,20 +62,11 @@ const CharInfo = (props) => {
     //     }
     // })
 
-    const skeleton = char ||loading || error ? null : <Skeleton/>;
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error || !char) ? <View char={char}/> : null; 
-        
     return (
         <div className="char__info">
-            {skeleton}
-            {errorMessage}
-            {spinner}
-            {content}
+            {setContent(process, View, char)}
         </div>
     )
-    
 }
 
 // class CharInfo extends Component {
@@ -151,8 +142,8 @@ const CharInfo = (props) => {
     
 // }
 
-const View = ({char}) => {
-    const {name, thumbnail, description, wiki, homepage, comics} = char;
+const View = ({data}) => {
+    const {name, thumbnail, description, wiki, homepage, comics} = data;
 
     let imgStyle = {'objectFit' : 'cover'};
     if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
